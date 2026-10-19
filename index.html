@@ -80,7 +80,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
 .bar .in{max-width:640px;margin:0 auto;display:grid;gap:6px}
 .bar .btns{display:grid;grid-template-columns:3fr 2fr;gap:8px}
-.bar .btns .btn{width:100%}
+.bar .btns .btn{width:100%;text-decoration:none;text-align:center;line-height:1.15;padding:0 10px}
 .bar .file{font-size:12px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--bg);
   padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:6}
@@ -188,14 +188,27 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 <div class="bar">
   <div class="in">
     <div class="btns">
-      <button type="button" class="btn primary" id="whatsapp">Enviar pelo WhatsApp</button>
+      <a class="btn primary" id="whatsapp" href="https://wa.me/5511939057483">Enviar pelo WhatsApp</a>
       <button type="button" class="btn ghost" id="baixar">Baixar PDF</button>
     </div>
     <div class="file" id="filePreview">Arquivo: Briefing.pdf</div>
-    <div class="file" id="versao">versão 8</div>
+    <div class="file" id="versao">versão 9</div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
+
+<div class="sheet-bg" id="waSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="waTitle">
+    <h2 id="waTitle">Mensagem pronta</h2>
+    <p class="help">Se o WhatsApp não abriu sozinho, toque em <b>Abrir WhatsApp</b>. Se ainda assim não abrir, toque em <b>Copiar mensagem</b>, abra o WhatsApp, entre na conversa com <b>(11) 93905-7483</b> e cole.</p>
+    <div class="acts">
+      <a class="btn primary" id="waOpen" href="https://wa.me/5511939057483">Abrir WhatsApp</a>
+      <button type="button" class="btn ghost" id="waCopy">Copiar mensagem</button>
+    </div>
+    <textarea id="waText" readonly rows="6" style="font-size:13px"></textarea>
+    <button type="button" class="btn link plain" id="waClose">Fechar e preencher o próximo</button>
+  </div>
+</div>
 
 <div class="sheet-bg" id="done" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="doneTitle">
@@ -521,30 +534,34 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     if (d.autor){ L.push(''); L.push('Preenchido por: ' + d.autor); }
     return L.join('\n');
   }
-  function sendWhats(d){
-    window.location.href = 'https://wa.me/' + WHATS_NUM + '?text=' + encodeURIComponent(buildMsg(d));
+  function waUrl(d){ return 'https://wa.me/' + WHATS_NUM + '?text=' + encodeURIComponent(buildMsg(d)); }
+  // Mostra a mensagem pronta com "Abrir WhatsApp" e "Copiar" (caso o celular não abra o WhatsApp sozinho).
+  function showWa(d){
+    $('waOpen').href = waUrl(d);
+    $('waText').value = buildMsg(d);
+    $('waSheet').hidden = false;
   }
-  $('whatsapp').addEventListener('click', function(){
+  // O botão é um link de verdade: o celular abre o WhatsApp pelo toque, sem bloquear.
+  $('whatsapp').addEventListener('click', function(ev){
     var d = collect();
-    if (!validate(d)) return;
+    if (!validate(d)){ ev.preventDefault(); return; }
+    this.href = waUrl(d);
     try { localStorage.setItem(LAST, JSON.stringify(d)); } catch(e){}
-    clearDraft(); fill({autor: d.autor}); save();
     $('ultimo').hidden = false;
-    toast('Abrindo o WhatsApp…');
-    sendWhats(d);
+    showWa(d);
+    setTimeout(function(){ clearDraft(); fill({autor: d.autor}); save(); }, 300);
   });
-  $('btnShare').addEventListener('click', function(){
-    if (!lastPdf) return;
-    navigator.share({files: [pdfFile(lastPdf)]}).then(function(){ toast('Enviado.'); }).catch(function(err){
-      if (err && err.name === 'AbortError') return;
-      toast('O celular não deixou compartilhar. Use "Baixar PDF" ou "Abrir PDF".');
-    });
+  $('waCopy').addEventListener('click', function(){
+    var t = $('waText'), txt = t.value;
+    function sel(){ t.focus(); t.select(); t.setSelectionRange(0, txt.length); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ toast('Mensagem copiada. Agora cole no WhatsApp.'); }, function(){ sel(); toast('Mensagem selecionada. Toque em Copiar.'); });
+    } else { sel(); try { document.execCommand('copy'); toast('Mensagem copiada.'); } catch(e){ toast('Mensagem selecionada. Toque em Copiar.'); } }
   });
-  $('btnDownload').addEventListener('click', function(){ if (lastPdf){ download(lastPdf); toast('Baixando ' + lastPdf.name); } });
-  $('btnClose').addEventListener('click', function(){ $('done').hidden = true; window.scrollTo({top: 0}); });
+  $('waClose').addEventListener('click', function(){ $('waSheet').hidden = true; window.scrollTo({top: 0}); });
   $('ultimo').addEventListener('click', function(){
     var d; try { d = JSON.parse(localStorage.getItem(LAST) || 'null'); } catch(e){ d = null; }
-    if (d) sendWhats(d);
+    if (d) showWa(d);
   });
   try { if (localStorage.getItem(LAST)) $('ultimo').hidden = false; } catch(e){}
 
