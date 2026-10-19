@@ -141,7 +141,11 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 
     <fieldset>
       <legend><span class="n">3.</span> Criativos</legend>
-      <p class="hint">Um bloco por vídeo ou arte. Cole o link do Google Drive com acesso liberado.</p>
+      <label class="f">Link da pasta do Drive com todos os criativos
+        <small>A pasta onde estão todos os vídeos e artes deste anúncio. Deixe o acesso liberado para quem tiver o link.</small>
+        <input type="text" id="pasta" name="pasta" inputmode="url" placeholder="drive.google.com/drive/folders/..." autocomplete="off">
+      </label>
+      <p class="hint" style="margin:0">Abaixo, um bloco por vídeo ou arte, com o link de cada um e a legenda.</p>
       <div id="criativos" style="display:grid;gap:12px"></div>
       <button type="button" class="btn ghost" id="addCriativo">+ Adicionar outro criativo</button>
     </fieldset>
@@ -217,7 +221,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     return {
       titulo: $('titulo').value.trim(),
       objetivo: obj ? obj.value : '',
-      verba: $('verba').value.trim(),
+      verba: $('verba').value.trim(), pasta: $('pasta').value.trim(),
       inicio: $('inicio').value, fim: $('fim').value, semfim: $('semfim').checked,
       criativos: Array.prototype.map.call(list.querySelectorAll('.criativo'), function(n){
         var c = {}; n.querySelectorAll('[data-k]').forEach(function(el){ c[el.dataset.k] = el.value.trim(); }); return c;
@@ -229,7 +233,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   function fill(d){
     $('titulo').value = d.titulo || '';
     form.querySelectorAll('input[name=objetivo]').forEach(function(r){ r.checked = r.value === d.objetivo; });
-    $('verba').value = d.verba || ''; $('inicio').value = d.inicio || ''; $('fim').value = d.fim || '';
+    $('verba').value = d.verba || ''; $('pasta').value = d.pasta || ''; $('inicio').value = d.inicio || ''; $('fim').value = d.fim || '';
     $('semfim').checked = !!d.semfim; $('fim').disabled = !!d.semfim;
     list.innerHTML = '';
     (d.criativos && d.criativos.length ? d.criativos : [null]).forEach(addCriativo);
@@ -282,7 +286,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     if (d.inicio && d.fim && d.fim < d.inicio) mark($('fim'), 'A data de término está antes do início.');
     list.querySelectorAll('.criativo').forEach(function(n){
       var link = n.querySelector('[data-k=link]');
-      if (!link.value.trim()) mark(link, 'Cole o link do Drive deste criativo.');
+      if (!link.value.trim() && !d.pasta) mark(link, 'Cole o link do Drive deste criativo ou o link da pasta acima.');
     });
     if (d.objetivo === 'Receber mensagens no WhatsApp' && !d.whats) mark($('whats'), 'Para anúncio de WhatsApp, informe o número.');
     if (d.objetivo === 'Vender no site' && !d.site) mark($('site'), 'Para vender no site, cole o link da página de venda.');
@@ -368,11 +372,12 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     field('Quando termina?', d.semfim ? 'Sem data pra acabar' : br(d.fim));
 
     section('3. Criativos');
+    if (d.pasta) field('Pasta com todos os criativos', d.pasta, {link: /^https?:\/\//i.test(d.pasta) ? d.pasta : 'https://' + d.pasta});
     d.criativos.forEach(function(c, i){
       ensure(40);
       doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor.apply(doc, green);
       doc.text('CRIATIVO ' + (i + 1), M, y); y += 14;
-      field('Link do Drive', c.link, {link: /^https?:\/\//i.test(c.link) ? c.link : 'https://' + c.link});
+      field('Link do Drive', c.link, {link: !c.link ? '' : (/^https?:\/\//i.test(c.link) ? c.link : 'https://' + c.link)});
       field('Legenda completa', c.legenda);
       y += 4;
     });
