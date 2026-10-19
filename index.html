@@ -184,7 +184,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 <template id="tplCriativo">
   <div class="criativo">
     <div class="top"><strong>Criativo <span class="idx"></span></strong><button type="button" class="btn link rm">Remover</button></div>
-    <label class="f">Link do Drive (vídeo ou arte)<input type="url" data-k="link" inputmode="url" placeholder="https://drive.google.com/..." autocomplete="off"></label>
+    <label class="f">Link do Drive (vídeo ou arte)<input type="text" data-k="link" inputmode="url" placeholder="drive.google.com/..." autocomplete="off"></label>
     <label class="f">Legenda completa<textarea data-k="legenda" rows="4"></textarea></label>
   </div>
 </template>
@@ -283,7 +283,6 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     list.querySelectorAll('.criativo').forEach(function(n){
       var link = n.querySelector('[data-k=link]');
       if (!link.value.trim()) mark(link, 'Cole o link do Drive deste criativo.');
-      else if (!/^https?:\/\//i.test(link.value.trim())) mark(link, 'O link precisa começar com https://');
     });
     if (d.objetivo === 'Receber mensagens no WhatsApp' && !d.whats) mark($('whats'), 'Para anúncio de WhatsApp, informe o número.');
     if (d.objetivo === 'Vender no site' && !d.site) mark($('site'), 'Para vender no site, cole o link da página de venda.');
@@ -373,7 +372,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
       ensure(40);
       doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor.apply(doc, green);
       doc.text('CRIATIVO ' + (i + 1), M, y); y += 14;
-      field('Link do Drive', c.link, {link: true});
+      field('Link do Drive', c.link, {link: /^https?:\/\//i.test(c.link) ? c.link : 'https://' + c.link});
       field('Legenda completa', c.legenda);
       y += 4;
     });
