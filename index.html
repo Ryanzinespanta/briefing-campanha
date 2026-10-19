@@ -79,10 +79,17 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 .bar .file{font-size:12px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--bg);
   padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:6}
-.done{display:grid;gap:12px;background:var(--soft);border:1px solid var(--accent);border-radius:14px;padding:16px}
-.done h2{margin:0;font-family:var(--display);font-size:20px}
-.done p{margin:0;font-size:14px;color:var(--muted)}
-.done .acts{display:flex;flex-wrap:wrap;gap:8px}
+.inapp{background:var(--soft);border:1px solid var(--accent);border-radius:14px;padding:14px 16px;font-size:14px;margin-bottom:14px;display:grid;gap:4px}
+.sheet-bg{position:fixed;inset:0;background:rgba(10,16,14,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;border-radius:18px 18px 0 0;display:grid;gap:12px;
+  padding-top:22px;padding-bottom:calc(18px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(18px, env(safe-area-inset-left, 0px));padding-right:max(18px, env(safe-area-inset-right, 0px))}
+.sheet h2{margin:0;font-family:var(--display);font-size:24px}
+.sheet .fname{margin:0;font-weight:600;word-break:break-word}
+.sheet .acts{display:grid;gap:10px}
+.sheet .acts .btn{width:100%;text-decoration:none}
+.sheet .help{margin:0;font-size:13px;color:var(--muted)}
+.btn.link.plain{color:var(--muted);justify-self:center}
 [hidden]{display:none!important}
 @media (max-width:380px){.row2{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -96,15 +103,11 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     <p>Preencha um briefing por anúncio. No fim, toque em <b>Gerar PDF</b>: o arquivo sai com o título do anúncio e o formulário volta em branco para o próximo.</p>
   </header>
 
-  <section class="done" id="done" hidden>
-    <h2>PDF pronto</h2>
-    <p id="doneName"></p>
-    <div class="acts">
-      <button type="button" class="btn ghost" id="reshare">Enviar de novo</button>
-      <button type="button" class="btn ghost" id="redownload">Baixar de novo</button>
-    </div>
-    <p>O formulário abaixo já está em branco para o próximo anúncio.</p>
-  </section>
+  <div class="inapp" id="inapp" hidden>
+    <b>Abra no navegador para baixar o PDF.</b>
+    Você abriu este link dentro de um aplicativo, que pode bloquear o download. Toque nos três pontinhos (⋯ ou ⋮) no canto da tela e escolha <b>Abrir no navegador</b>, no Safari ou no Chrome.
+  </div>
+  <button type="button" class="btn ghost" id="ultimo" hidden style="width:100%;margin-bottom:14px">Pegar de novo o último PDF gerado</button>
 
   <form id="f" novalidate>
     <fieldset>
@@ -184,6 +187,20 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
+
+<div class="sheet-bg" id="done" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="doneTitle">
+    <h2 id="doneTitle">PDF pronto</h2>
+    <p class="fname" id="doneName"></p>
+    <div class="acts">
+      <button type="button" class="btn primary" id="btnShare">Enviar pelo WhatsApp</button>
+      <button type="button" class="btn ghost" id="btnDownload">Baixar PDF</button>
+      <a class="btn ghost" id="btnOpen" href="#" target="_blank" rel="noopener">Abrir PDF</a>
+    </div>
+    <p class="help" id="doneHelp"></p>
+    <button type="button" class="btn link plain" id="btnClose">Fechar e preencher o próximo</button>
+  </div>
+</div>
 
 <template id="tplCriativo">
   <div class="criativo">
@@ -402,40 +419,61 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   }
 
   // ---------- envio ----------
-  function download(blob, name){
-    var url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+  // Cada botão age direto no toque: o celular bloqueia download/compartilhar que não vêm de um toque.
+  var LAST = 'briefing-ultimo-v1', openUrl = null;
+  function pdfFile(pdf){ try { return new File([pdf.blob], pdf.name, {type: 'application/pdf'}); } catch(e){ return null; } }
+  function canShareFile(pdf){ var f = pdfFile(pdf); try { return !!(f && navigator.canShare && navigator.canShare({files: [f]})); } catch(e){ return false; } }
+  function download(pdf){
+    var url = URL.createObjectURL(pdf.blob), a = document.createElement('a');
+    a.href = url; a.download = pdf.name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
   }
-  function share(pdf){
-    var file;
-    try { file = new File([pdf.blob], pdf.name, {type: 'application/pdf'}); } catch(e){ file = null; }
-    if (file && navigator.canShare && navigator.canShare({files: [file]})){
-      return navigator.share({files: [file], title: pdf.title}).then(function(){ return 'shared'; })
-        .catch(function(err){ if (err && err.name === 'AbortError') return 'aborted'; download(pdf.blob, pdf.name); return 'downloaded'; });
-    }
-    download(pdf.blob, pdf.name);
-    return Promise.resolve('downloaded');
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var inApp = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|WhatsApp|TikTok|musical_ly|; wv\)/i.test(navigator.userAgent);
+  if (inApp) $('inapp').hidden = false;
+
+  function showDone(pdf){
+    lastPdf = pdf;
+    if (openUrl) URL.revokeObjectURL(openUrl);
+    openUrl = URL.createObjectURL(pdf.blob);
+    $('btnOpen').href = openUrl;
+    $('doneName').textContent = pdf.name;
+    $('btnShare').hidden = !canShareFile(pdf);
+    $('btnDownload').className = 'btn ' + ($('btnShare').hidden ? 'primary' : 'ghost');
+    $('doneHelp').textContent = isIOS
+      ? 'No iPhone, "Baixar PDF" salva no app Arquivos, na pasta Downloads. "Abrir PDF" mostra o arquivo; dali dá para tocar em compartilhar e mandar.'
+      : '"Baixar PDF" salva na pasta Downloads do celular. "Abrir PDF" mostra o arquivo na tela.';
+    $('done').hidden = false;
   }
+  function makePdf(d){ return { blob: buildPdf(d), name: fileName(d.titulo), title: d.titulo }; }
 
   $('gerar').addEventListener('click', function(){
     var d = collect();
     if (!validate(d)) return;
     if (!window.jspdf){ toast('Sem internet para gerar o PDF. Conecte e tente de novo.'); return; }
-    var pdf = { blob: buildPdf(d), name: fileName(d.titulo), title: d.titulo };
-    lastPdf = pdf;
-    var autor = d.autor;
-    share(pdf).then(function(r){
-      if (r === 'aborted'){ toast('Envio cancelado. Seus dados continuam no formulário.'); return; }
-      // deixa 1 em branco para o próximo; mantém só o nome de quem preenche
-      clearDraft(); fill({autor: autor}); save(); $('toast').hidden = true;
-      $('done').hidden = false;
-      $('doneName').textContent = (r === 'shared' ? 'Enviado: ' : 'Salvo: ') + pdf.name;
-      window.scrollTo({top: 0, behavior: 'smooth'});
+    var pdf;
+    try { pdf = makePdf(d); } catch(e){ toast('Não consegui gerar o PDF. Tente de novo.'); return; }
+    // guarda o último envio (dá para pegar de novo) e deixa 1 em branco para o próximo
+    try { localStorage.setItem(LAST, JSON.stringify(d)); } catch(e){}
+    clearDraft(); fill({autor: d.autor}); save(); $('toast').hidden = true;
+    $('ultimo').hidden = false;
+    showDone(pdf);
+  });
+  $('btnShare').addEventListener('click', function(){
+    if (!lastPdf) return;
+    navigator.share({files: [pdfFile(lastPdf)]}).then(function(){ toast('Enviado.'); }).catch(function(err){
+      if (err && err.name === 'AbortError') return;
+      toast('O celular não deixou compartilhar. Use "Baixar PDF" ou "Abrir PDF".');
     });
   });
-  $('reshare').addEventListener('click', function(){ if (lastPdf) share(lastPdf); });
-  $('redownload').addEventListener('click', function(){ if (lastPdf) download(lastPdf.blob, lastPdf.name); });
+  $('btnDownload').addEventListener('click', function(){ if (lastPdf){ download(lastPdf); toast('Baixando ' + lastPdf.name); } });
+  $('btnClose').addEventListener('click', function(){ $('done').hidden = true; window.scrollTo({top: 0}); });
+  $('ultimo').addEventListener('click', function(){
+    var d; try { d = JSON.parse(localStorage.getItem(LAST) || 'null'); } catch(e){ d = null; }
+    if (!d || !window.jspdf) return;
+    showDone(makePdf(d));
+  });
+  try { if (localStorage.getItem(LAST)) $('ultimo').hidden = false; } catch(e){}
 
   var confirmArmed = false;
   $('limpar').addEventListener('click', function(){
