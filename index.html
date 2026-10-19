@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Briefing de Campanha</title>
+<meta name="theme-color" content="#1f3d36">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: uma coluna, cartões por seção, barra fixa de envio no rodapé */
+:root{
+  --bg:#f3f4f1; --surface:#ffffff; --ink:#1b2422; --muted:#5d6a66; --line:#d9ded9;
+  --accent:#1f5c4f; --accent-ink:#ffffff; --soft:#e6efeb; --error:#b3261e;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"Public Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#121715; --surface:#1b2220; --ink:#e7ece9; --muted:#9aa8a3; --line:#2f3a37;
+    --accent:#5fb39d; --accent-ink:#0d1412; --soft:#203029; --error:#f2867d; color-scheme:dark; }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:calc(20px + env(safe-area-inset-top, 0px)) 140px}
+header .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.15;margin:6px 0 6px;text-wrap:balance}
+header p{margin:0 0 20px;color:var(--muted);font-size:15px}
+form{display:grid;gap:14px}
+fieldset{border:1px solid var(--line);background:var(--surface);border-radius:14px;margin:0;padding:18px 16px 20px;display:grid;gap:14px;min-width:0}
+legend{float:left;width:100%;padding:0;font-family:var(--display);font-weight:600;font-size:20px;line-height:1.25}
+legend .n{color:var(--accent)}
+legend + *{clear:both}
+.hint{font-size:13px;color:var(--muted);margin:-8px 0 0}
+label.f{display:grid;gap:6px;font-weight:600;font-size:14px}
+label.f small{font-weight:400;color:var(--muted);font-size:13px}
+input[type=text],input[type=url],input[type=tel],input[type=date],input[type=number],textarea,select{
+  width:100%;font:16px/1.4 var(--body);color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:10px;padding:12px 12px;min-height:48px;appearance:none;-webkit-appearance:none}
+textarea{min-height:96px;resize:vertical}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.money{position:relative}
+.money span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:500}
+.money input{padding-left:40px;font-variant-numeric:tabular-nums}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row2 > *{min-width:0}
+.options{display:grid;gap:8px}
+.opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-weight:500;cursor:pointer;min-height:48px}
+.opt input{width:20px;height:20px;accent-color:var(--accent);margin:0;flex:none}
+.opt:has(input:checked){border-color:var(--accent);background:var(--soft)}
+.check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+.check input{width:20px;height:20px;accent-color:var(--accent);margin:0}
+.criativo{border:1px dashed var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;background:var(--bg)}
+.criativo input,.criativo textarea,.criativo select{background:var(--surface)}
+.criativo .top{display:flex;justify-content:space-between;align-items:center}
+.criativo .top strong{font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.btn{font:600 16px/1 var(--body);border-radius:12px;min-height:50px;padding:0 18px;border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);width:100%}
+.btn.link{background:none;border:none;color:var(--error);min-height:36px;padding:0 4px;font-size:14px}
+.err{border-color:var(--error)!important}
+.errmsg{color:var(--error);font-size:13px;font-weight:500}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);z-index:5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
+.bar .in{max-width:640px;margin:0 auto;display:grid;gap:6px}
+.bar .file{font-size:12px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:6}
+.done{display:grid;gap:12px;background:var(--soft);border:1px solid var(--accent);border-radius:14px;padding:16px}
+.done h2{margin:0;font-family:var(--display);font-size:20px}
+.done p{margin:0;font-size:14px;color:var(--muted)}
+.done .acts{display:flex;flex-wrap:wrap;gap:8px}
+[hidden]{display:none!important}
+@media (max-width:380px){.row2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Entrega para o gestor de tráfego</div>
+    <h1>Briefing de Campanha</h1>
+    <p>Preencha um briefing por anúncio. No fim, toque em <b>Gerar PDF</b>: o arquivo sai com o título do anúncio e o formulário volta em branco para o próximo.</p>
+  </header>
+
+  <section class="done" id="done" hidden>
+    <h2>PDF pronto</h2>
+    <p id="doneName"></p>
+    <div class="acts">
+      <button type="button" class="btn ghost" id="reshare">Enviar de novo</button>
+      <button type="button" class="btn ghost" id="redownload">Baixar de novo</button>
+    </div>
+    <p>O formulário abaixo já está em branco para o próximo anúncio.</p>
+  </section>
+
+  <form id="f" novalidate>
+    <fieldset>
+      <legend>Título do anúncio</legend>
+      <label class="f">Como esse anúncio vai se chamar?
+        <small>Esse nome vai no topo do PDF e no nome do arquivo. Ex.: Promo Dia das Mães – Loja Centro</small>
+        <input type="text" id="titulo" name="titulo" maxlength="80" autocomplete="off" required>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="n">1.</span> Objetivo</legend>
+      <p class="hint">Marque só um.</p>
+      <div class="options" id="objetivo">
+        <label class="opt"><input type="radio" name="objetivo" value="Receber mensagens no WhatsApp">Receber mensagens no WhatsApp</label>
+        <label class="opt"><input type="radio" name="objetivo" value="Vender no site">Vender no site</label>
+        <label class="opt"><input type="radio" name="objetivo" value="Pegar cadastro (nome e telefone)">Pegar cadastro (nome e telefone)</label>
+        <label class="opt"><input type="radio" name="objetivo" value="Ganhar seguidores e visualizações">Ganhar seguidores e visualizações</label>
+        <label class="opt"><input type="radio" name="objetivo" value="Levar gente até a loja">Levar gente até a loja</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="n">2.</span> Verba e datas</legend>
+      <label class="f">Quanto por dia?
+        <div class="money"><span>R$</span><input type="text" id="verba" name="verba" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+      </label>
+      <div class="row2">
+        <label class="f">Começa em<input type="date" id="inicio" name="inicio"></label>
+        <label class="f">Termina em<input type="date" id="fim" name="fim"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="semfim" name="semfim">Sem data pra acabar</label>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="n">3.</span> Criativos</legend>
+      <p class="hint">Um bloco por vídeo ou arte. Cole o link do Google Drive com acesso liberado.</p>
+      <div id="criativos" style="display:grid;gap:12px"></div>
+      <button type="button" class="btn ghost" id="addCriativo">+ Adicionar outro criativo</button>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="n">4.</span> Contato</legend>
+      <label class="f">Número do WhatsApp que vai receber as mensagens
+        <input type="tel" id="whats" name="whats" inputmode="tel" placeholder="(81) 9 9999-9999" autocomplete="off">
+      </label>
+      <label class="f">Link do site <small>(se tiver)</small>
+        <input type="url" id="site" name="site" inputmode="url" placeholder="https://" autocomplete="off">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend><span class="n">5.</span> Observações gerais</legend>
+      <label class="f"><small>Público, região, promoção, o que não pode faltar, prazo…</small>
+        <textarea id="obs" name="obs" rows="5"></textarea>
+      </label>
+      <label class="f">Quem preencheu
+        <input type="text" id="autor" name="autor" autocomplete="name">
+      </label>
+    </fieldset>
+
+    <button type="button" class="btn link" id="limpar" style="justify-self:start">Apagar tudo e começar de novo</button>
+  </form>
+</div>
+
+<div class="bar">
+  <div class="in">
+    <button type="button" class="btn primary" id="gerar">Gerar PDF e enviar</button>
+    <div class="file" id="filePreview">Arquivo: Briefing.pdf</div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<template id="tplCriativo">
+  <div class="criativo">
+    <div class="top"><strong>Criativo <span class="idx"></span></strong><button type="button" class="btn link rm">Remover</button></div>
+    <label class="f">Link do Drive (vídeo ou arte)<input type="url" data-k="link" inputmode="url" placeholder="https://drive.google.com/..." autocomplete="off"></label>
+    <label class="f">Legenda completa<textarea data-k="legenda" rows="4"></textarea></label>
+    <label class="f">Texto do botão
+      <select data-k="botao">
+        <option value="">Escolha…</option>
+        <option>Enviar mensagem</option>
+        <option>Saiba mais</option>
+        <option>Comprar agora</option>
+        <option>Cadastre-se</option>
+        <option>Fale conosco</option>
+        <option>Ver mais no Instagram</option>
+        <option>Como chegar</option>
+        <option>Ligar agora</option>
+      </select>
+    </label>
+    <label class="f">Pra onde o botão leva?
+      <select data-k="destino">
+        <option value="">Escolha…</option>
+        <option>WhatsApp</option>
+        <option>Site</option>
+        <option>Instagram</option>
+        <option>Formulário de cadastro</option>
+        <option>Endereço da loja (mapa)</option>
+      </select>
+    </label>
+  </div>
+</template>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+  var KEY = 'briefing-rascunho-v1';
+  var $ = function(id){ return document.getElementById(id); };
+  var form = $('f'), list = $('criativos'), tpl = $('tplCriativo');
+  var lastPdf = null;
+
+  // ---------- criativos ----------
+  function addCriativo(data){
+    var node = tpl.content.firstElementChild.cloneNode(true);
+    if (data) node.querySelectorAll('[data-k]').forEach(function(el){ el.value = data[el.dataset.k] || ''; });
+    node.querySelector('.rm').addEventListener('click', function(){ node.remove(); renumber(); save(); });
+    list.appendChild(node); renumber();
+    return node;
+  }
+  function renumber(){
+    var items = list.querySelectorAll('.criativo');
+    items.forEach(function(n, i){ n.querySelector('.idx').textContent = i + 1; n.querySelector('.rm').hidden = items.length === 1; });
+  }
+  $('addCriativo').addEventListener('click', function(){ var n = addCriativo(); n.querySelector('input').focus(); save(); });
+
+  // ---------- coleta ----------
+  function collect(){
+    var obj = form.querySelector('input[name=objetivo]:checked');
+    return {
+      titulo: $('titulo').value.trim(),
+      objetivo: obj ? obj.value : '',
+      verba: $('verba').value.trim(),
+      inicio: $('inicio').value, fim: $('fim').value, semfim: $('semfim').checked,
+      criativos: Array.prototype.map.call(list.querySelectorAll('.criativo'), function(n){
+        var c = {}; n.querySelectorAll('[data-k]').forEach(function(el){ c[el.dataset.k] = el.value.trim(); }); return c;
+      }),
+      whats: $('whats').value.trim(), site: $('site').value.trim(),
+      obs: $('obs').value.trim(), autor: $('autor').value.trim()
+    };
+  }
+  function fill(d){
+    $('titulo').value = d.titulo || '';
+    form.querySelectorAll('input[name=objetivo]').forEach(function(r){ r.checked = r.value === d.objetivo; });
+    $('verba').value = d.verba || ''; $('inicio').value = d.inicio || ''; $('fim').value = d.fim || '';
+    $('semfim').checked = !!d.semfim; $('fim').disabled = !!d.semfim;
+    list.innerHTML = '';
+    (d.criativos && d.criativos.length ? d.criativos : [null]).forEach(addCriativo);
+    $('whats').value = d.whats || ''; $('site').value = d.site || ''; $('obs').value = d.obs || '';
+    $('autor').value = d.autor || '';
+    updateFileName();
+  }
+
+  // ---------- rascunho (não perde se fechar o navegador) ----------
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(collect())); } catch(e){} }
+  function load(){ try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){ return null; } }
+  function clearDraft(){ try { localStorage.removeItem(KEY); } catch(e){} }
+
+  form.addEventListener('input', function(){ save(); updateFileName(); });
+  form.addEventListener('change', function(){ save(); });
+  $('semfim').addEventListener('change', function(){ $('fim').disabled = this.checked; if (this.checked) $('fim').value = ''; });
+
+  // ---------- nome do arquivo ----------
+  function fileName(t){
+    var clean = (t || '').replace(/[\\\/:*?"<>|#%{}~&]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    return (clean || 'Briefing') + '.pdf';
+  }
+  function updateFileName(){ $('filePreview').textContent = 'Arquivo: ' + fileName($('titulo').value); }
+
+  // ---------- validação ----------
+  function validate(d){
+    form.querySelectorAll('.err').forEach(function(e){ e.classList.remove('err'); });
+    form.querySelectorAll('.errmsg').forEach(function(e){ e.remove(); });
+    var problems = [];
+    function mark(el, msg){
+      el.classList.add('err');
+      var m = document.createElement('div'); m.className = 'errmsg'; m.textContent = msg;
+      (el.closest('label.f') || el.closest('fieldset')).appendChild(m);
+      problems.push(el);
+    }
+    if (!d.titulo) mark($('titulo'), 'Dê um título ao anúncio. Ele vira o nome do PDF.');
+    if (!d.objetivo) mark($('objetivo'), 'Escolha o objetivo do anúncio.');
+    if (!d.verba) mark($('verba'), 'Informe quanto vai investir por dia.');
+    if (!d.inicio) mark($('inicio'), 'Informe quando começa.');
+    if (!d.fim && !d.semfim) mark($('fim'), 'Informe quando termina ou marque "Sem data pra acabar".');
+    if (d.inicio && d.fim && d.fim < d.inicio) mark($('fim'), 'A data de término está antes do início.');
+    list.querySelectorAll('.criativo').forEach(function(n){
+      var link = n.querySelector('[data-k=link]');
+      if (!link.value.trim()) mark(link, 'Cole o link do Drive deste criativo.');
+      else if (!/^https?:\/\//i.test(link.value.trim())) mark(link, 'O link precisa começar com https://');
+    });
+    if (d.objetivo === 'Receber mensagens no WhatsApp' && !d.whats) mark($('whats'), 'Para anúncio de WhatsApp, informe o número.');
+    if (d.objetivo === 'Vender no site' && !d.site) mark($('site'), 'Para vender no site, informe o link.');
+    if (problems.length){
+      problems[0].scrollIntoView({behavior:'smooth', block:'center'});
+      if (problems[0].focus) problems[0].focus({preventScroll:true});
+      toast(problems.length === 1 ? 'Falta 1 item, marcado em vermelho.' : 'Faltam ' + problems.length + ' itens, marcados em vermelho.');
+    }
+    return problems.length === 0;
+  }
+
+  // ---------- PDF ----------
+  function br(iso){ if (!iso) return ''; var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+  function safe(s){
+    // fonte padrão do PDF só tem caracteres latinos: troca o que não cabe
+    return String(s || '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
+      .replace(/[–—]/g, '-').replace(/…/g, '...').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '');
+  }
+  function buildPdf(d){
+    var J = window.jspdf.jsPDF;
+    var doc = new J({unit:'pt', format:'a4'});
+    var W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+    var M = 48, CW = W - M * 2, y = 0;
+    var green = [31, 92, 79], ink = [27, 36, 34], muted = [93, 106, 102], line = [217, 222, 217], soft = [238, 243, 240];
+    var now = new Date();
+    var stamp = String(now.getDate()).padStart(2,'0') + '/' + String(now.getMonth()+1).padStart(2,'0') + '/' + now.getFullYear() +
+      ' às ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+    function header(){
+      doc.setFillColor.apply(doc, green); doc.rect(0, 0, W, 6, 'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor.apply(doc, muted);
+      doc.text(safe('Briefing de Campanha - Entrega para o Gestor de Tráfego'), M, 26);
+      y = 48;
+    }
+    function ensure(h){ if (y + h > H - 50){ doc.addPage(); header(); } }
+    function section(t){
+      ensure(60); y += 10;
+      doc.setFont('helvetica','bold'); doc.setFontSize(13.5); doc.setTextColor.apply(doc, ink);
+      doc.text(safe(t), M, y); y += 8;
+      doc.setDrawColor.apply(doc, line); doc.setLineWidth(.8); doc.line(M, y, W - M, y); y += 16;
+    }
+    function field(label, value, opts){
+      opts = opts || {};
+      var v = safe(value) || '-';
+      doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+      var lines = doc.splitTextToSize(v, CW - 150);
+      doc.setFontSize(9);
+      var lab = doc.splitTextToSize(safe(label), 140);
+      var h = Math.max(lines.length * 14, lab.length * 11, 14) + 8;
+      ensure(h);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor.apply(doc, muted);
+      doc.text(lab, M, y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+      if (opts.link && value){
+        doc.setTextColor(26, 82, 160);
+        lines.forEach(function(l, i){ doc.textWithLink(l, M + 150, y + i * 14, {url: value}); });
+      } else {
+        doc.setTextColor.apply(doc, ink);
+        doc.text(lines, M + 150, y, {lineHeightFactor: 1.33});
+      }
+      y += h;
+    }
+
+    header();
+    // título do anúncio
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor.apply(doc, green);
+    doc.text('TÍTULO DO ANÚNCIO', M, y); y += 22;
+    doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor.apply(doc, ink);
+    var tl = doc.splitTextToSize(safe(d.titulo), CW);
+    doc.text(tl, M, y, {lineHeightFactor: 1.15}); y += tl.length * 25 + 2;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor.apply(doc, muted);
+    doc.text(safe('Enviado em ' + stamp + (d.autor ? ' por ' + d.autor : '')), M, y); y += 12;
+
+    section('1. Objetivo');
+    doc.setFillColor.apply(doc, soft); doc.roundedRect(M, y - 13, CW, 24, 4, 4, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor.apply(doc, ink);
+    doc.text(safe(d.objetivo), M + 10, y + 3); y += 26;
+
+    section('2. Verba e datas');
+    var verba = d.verba.replace(/^R\$\s*/i, '');
+    field('Quanto por dia?', 'R$ ' + verba);
+    field('Quando começa?', br(d.inicio));
+    field('Quando termina?', d.semfim ? 'Sem data pra acabar' : br(d.fim));
+
+    section('3. Criativos');
+    d.criativos.forEach(function(c, i){
+      ensure(40);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor.apply(doc, green);
+      doc.text('CRIATIVO ' + (i + 1), M, y); y += 14;
+      field('Link do Drive', c.link, {link: true});
+      field('Legenda completa', c.legenda);
+      field('Texto do botão', c.botao);
+      field('Pra onde o botão leva?', c.destino);
+      y += 4;
+    });
+
+    section('4. Contato');
+    field('WhatsApp que recebe as mensagens', d.whats);
+    field('Link do site', d.site, {link: /^https?:\/\//i.test(d.site)});
+
+    section('5. Observações gerais');
+    doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor.apply(doc, ink);
+    doc.splitTextToSize(safe(d.obs) || '-', CW).forEach(function(l){ ensure(14); doc.text(l, M, y); y += 14; });
+
+    var pages = doc.getNumberOfPages();
+    for (var p = 1; p <= pages; p++){
+      doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor.apply(doc, muted);
+      doc.text(safe(d.titulo).slice(0, 70), M, H - 24);
+      doc.text('Página ' + p + ' de ' + pages, W - M, H - 24, {align: 'right'});
+    }
+    doc.setProperties({title: safe(d.titulo), subject: 'Briefing de Campanha', creator: 'Briefing de Campanha'});
+    return doc.output('blob');
+  }
+
+  // ---------- envio ----------
+  function download(blob, name){
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+  }
+  function share(pdf){
+    var file;
+    try { file = new File([pdf.blob], pdf.name, {type: 'application/pdf'}); } catch(e){ file = null; }
+    if (file && navigator.canShare && navigator.canShare({files: [file]})){
+      return navigator.share({files: [file], title: pdf.title}).then(function(){ return 'shared'; })
+        .catch(function(err){ if (err && err.name === 'AbortError') return 'aborted'; download(pdf.blob, pdf.name); return 'downloaded'; });
+    }
+    download(pdf.blob, pdf.name);
+    return Promise.resolve('downloaded');
+  }
+
+  $('gerar').addEventListener('click', function(){
+    var d = collect();
+    if (!validate(d)) return;
+    if (!window.jspdf){ toast('Sem internet para gerar o PDF. Conecte e tente de novo.'); return; }
+    var pdf = { blob: buildPdf(d), name: fileName(d.titulo), title: d.titulo };
+    lastPdf = pdf;
+    var autor = d.autor;
+    share(pdf).then(function(r){
+      if (r === 'aborted'){ toast('Envio cancelado. Seus dados continuam no formulário.'); return; }
+      // deixa 1 em branco para o próximo; mantém só o nome de quem preenche
+      clearDraft(); fill({autor: autor}); save(); $('toast').hidden = true;
+      $('done').hidden = false;
+      $('doneName').textContent = (r === 'shared' ? 'Enviado: ' : 'Salvo: ') + pdf.name;
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  });
+  $('reshare').addEventListener('click', function(){ if (lastPdf) share(lastPdf); });
+  $('redownload').addEventListener('click', function(){ if (lastPdf) download(lastPdf.blob, lastPdf.name); });
+
+  var confirmArmed = false;
+  $('limpar').addEventListener('click', function(){
+    if (!confirmArmed){ confirmArmed = true; this.textContent = 'Toque de novo para confirmar'; var b = this;
+      setTimeout(function(){ confirmArmed = false; b.textContent = 'Apagar tudo e começar de novo'; }, 3000); return; }
+    confirmArmed = false; this.textContent = 'Apagar tudo e começar de novo';
+    var autor = $('autor').value; clearDraft(); fill({autor: autor}); save(); toast('Formulário em branco.');
+  });
+
+  var tt;
+  function toast(msg){ var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(function(){ t.hidden = true; }, 3500); }
+
+  fill(load() || {});
+})();
+</script>
+</body>
+</html>
