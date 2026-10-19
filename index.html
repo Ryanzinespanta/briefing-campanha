@@ -55,6 +55,10 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 .opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-weight:500;cursor:pointer;min-height:48px}
 .opt input{width:20px;height:20px;accent-color:var(--accent);margin:0;flex:none}
 .opt:has(input:checked){border-color:var(--accent);background:var(--soft)}
+.tag{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:2px;white-space:nowrap}
+.tag.req{background:var(--accent);color:var(--accent-ink)}
+.tag.opt2{background:var(--line);color:var(--muted)}
+.tag:empty{display:none}
 .check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
 .check input{width:20px;height:20px;accent-color:var(--accent);margin:0}
 .criativo{border:1px dashed var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;background:var(--bg)}
@@ -144,11 +148,14 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 
     <fieldset>
       <legend><span class="n">4.</span> Contato</legend>
-      <label class="f">Número do WhatsApp que vai receber as mensagens
+      <p class="hint">Preencha o que combina com o objetivo marcado no item 1.</p>
+      <label class="f"><span>WhatsApp que vai atender os clientes do anúncio <em class="tag" id="tagWhats"></em></span>
+        <small>Para o objetivo <b>Receber mensagens no WhatsApp</b>. É o número que vai receber e responder as conversas de quem clicar no anúncio. Coloque com DDD.</small>
         <input type="tel" id="whats" name="whats" inputmode="tel" placeholder="(81) 9 9999-9999" autocomplete="off">
       </label>
-      <label class="f">Link do site <small>(se tiver)</small>
-        <input type="url" id="site" name="site" inputmode="url" placeholder="https://" autocomplete="off">
+      <label class="f"><span>Link da página de venda <em class="tag" id="tagSite"></em></span>
+        <small>Para o objetivo <b>Vender no site</b>. Cole o link exato da página do produto ou da loja online para onde o anúncio vai levar, começando com https://</small>
+        <input type="url" id="site" name="site" inputmode="url" placeholder="https://sualoja.com.br/produto" autocomplete="off">
       </label>
     </fieldset>
 
@@ -228,7 +235,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     (d.criativos && d.criativos.length ? d.criativos : [null]).forEach(addCriativo);
     $('whats').value = d.whats || ''; $('site').value = d.site || ''; $('obs').value = d.obs || '';
     $('autor').value = d.autor || '';
-    updateFileName();
+    updateFileName(); updateTags();
   }
 
   // ---------- rascunho (não perde se fechar o navegador) ----------
@@ -236,6 +243,15 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   function load(){ try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch(e){ return null; } }
   function clearDraft(){ try { localStorage.removeItem(KEY); } catch(e){} }
 
+  function updateTags(){
+    var o = (form.querySelector('input[name=objetivo]:checked') || {}).value || '';
+    [['tagWhats','Receber mensagens no WhatsApp'],['tagSite','Vender no site']].forEach(function(t){
+      var el = $(t[0]);
+      el.textContent = !o ? '' : (o === t[1] ? 'Obrigatório' : 'Opcional');
+      el.className = 'tag ' + (o === t[1] ? 'req' : 'opt2');
+    });
+  }
+  form.addEventListener('change', updateTags);
   form.addEventListener('input', function(){ save(); updateFileName(); });
   form.addEventListener('change', function(){ save(); });
   $('semfim').addEventListener('change', function(){ $('fim').disabled = this.checked; if (this.checked) $('fim').value = ''; });
@@ -270,7 +286,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
       else if (!/^https?:\/\//i.test(link.value.trim())) mark(link, 'O link precisa começar com https://');
     });
     if (d.objetivo === 'Receber mensagens no WhatsApp' && !d.whats) mark($('whats'), 'Para anúncio de WhatsApp, informe o número.');
-    if (d.objetivo === 'Vender no site' && !d.site) mark($('site'), 'Para vender no site, informe o link.');
+    if (d.objetivo === 'Vender no site' && !d.site) mark($('site'), 'Para vender no site, cole o link da página de venda.');
+    if (d.site && !/^https?:\/\//i.test(d.site)) mark($('site'), 'O link precisa começar com https://');
     if (problems.length){
       problems[0].scrollIntoView({behavior:'smooth', block:'center'});
       if (problems[0].focus) problems[0].focus({preventScroll:true});
@@ -363,8 +380,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     });
 
     section('4. Contato');
-    field('WhatsApp que recebe as mensagens', d.whats);
-    field('Link do site', d.site, {link: /^https?:\/\//i.test(d.site)});
+    field('WhatsApp que vai atender os clientes', d.whats);
+    field('Link da página de venda', d.site, {link: /^https?:\/\//i.test(d.site)});
 
     section('5. Observações gerais');
     doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor.apply(doc, ink);
