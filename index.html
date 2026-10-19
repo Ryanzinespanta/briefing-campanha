@@ -32,10 +32,13 @@ header .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;col
 h1{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.15;margin:6px 0 6px;text-wrap:balance}
 header p{margin:0 0 20px;color:var(--muted);font-size:15px}
 form{display:grid;gap:14px}
-fieldset{border:1px solid var(--line);background:var(--surface);border-radius:14px;margin:0;padding:18px 16px 20px;display:grid;gap:14px;min-width:0}
-legend{float:left;width:100%;padding:0;font-family:var(--display);font-weight:600;font-size:20px;line-height:1.25}
-legend .n{color:var(--accent)}
-legend + *{clear:both}
+
+.card{border:1px solid var(--line);background:var(--surface);border-radius:14px;margin:0;padding:18px 16px 20px;display:grid;gap:14px;min-width:0}
+
+.lg{margin:0;font-family:var(--display);font-weight:600;font-size:20px;line-height:1.25}
+
+.lg .n{color:var(--accent)}
+
 .hint{font-size:13px;color:var(--muted);margin:-8px 0 0}
 label.f{display:grid;gap:6px;font-weight:600;font-size:14px}
 label.f small{font-weight:400;color:var(--muted);font-size:13px}
@@ -76,6 +79,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
   padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
 .bar .in{max-width:640px;margin:0 auto;display:grid;gap:6px}
+.bar .btns{display:grid;grid-template-columns:3fr 2fr;gap:8px}
+.bar .btns .btn{width:100%}
 .bar .file{font-size:12px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--bg);
   padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:6}
@@ -100,7 +105,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   <header>
     <div class="eyebrow">Entrega para o gestor de tráfego</div>
     <h1>Briefing de Campanha</h1>
-    <p>Preencha um briefing por anúncio. No fim, toque em <b>Gerar PDF</b>: o arquivo sai com o título do anúncio e o formulário volta em branco para o próximo.</p>
+    <p>Preencha um briefing por anúncio. No fim, toque em <b>Baixar PDF</b>: o arquivo sai com o título do anúncio e o formulário volta em branco para o próximo.</p>
   </header>
 
   <div class="inapp" id="inapp" hidden>
@@ -110,16 +115,16 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   <button type="button" class="btn ghost" id="ultimo" hidden style="width:100%;margin-bottom:14px">Pegar de novo o último PDF gerado</button>
 
   <form id="f" novalidate>
-    <fieldset>
-      <legend>Título do anúncio</legend>
+    <section class="card">
+      <h2 class="lg">Título do anúncio</h2>
       <label class="f">Como esse anúncio vai se chamar?
         <small>Esse nome vai no topo do PDF e no nome do arquivo. Ex.: Promo Dia das Mães – Loja Centro</small>
         <input type="text" id="titulo" name="titulo" maxlength="80" autocomplete="off" required>
       </label>
-    </fieldset>
+    </section>
 
-    <fieldset>
-      <legend><span class="n">1.</span> Objetivo</legend>
+    <section class="card">
+      <h2 class="lg"><span class="n">1.</span> Objetivo</h2>
       <p class="hint">Marque só um.</p>
       <div class="options" id="objetivo">
         <label class="opt"><input type="radio" name="objetivo" value="Receber mensagens no WhatsApp">Receber mensagens no WhatsApp</label>
@@ -128,10 +133,10 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
         <label class="opt"><input type="radio" name="objetivo" value="Ganhar seguidores e visualizações">Ganhar seguidores e visualizações</label>
         <label class="opt"><input type="radio" name="objetivo" value="Levar gente até a loja">Levar gente até a loja</label>
       </div>
-    </fieldset>
+    </section>
 
-    <fieldset>
-      <legend><span class="n">2.</span> Verba e datas</legend>
+    <section class="card">
+      <h2 class="lg"><span class="n">2.</span> Verba e datas</h2>
       <label class="f">Quanto por dia?
         <div class="money"><span>R$</span><input type="text" id="verba" name="verba" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
       </label>
@@ -140,10 +145,10 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
         <label class="f">Termina em<input type="date" id="fim" name="fim"></label>
       </div>
       <label class="check"><input type="checkbox" id="semfim" name="semfim">Sem data pra acabar</label>
-    </fieldset>
+    </section>
 
-    <fieldset>
-      <legend><span class="n">3.</span> Criativos</legend>
+    <section class="card">
+      <h2 class="lg"><span class="n">3.</span> Criativos</h2>
       <label class="f">Link da pasta do Drive com todos os criativos
         <small>A pasta onde estão todos os vídeos e artes deste anúncio. Deixe o acesso liberado para quem tiver o link.</small>
         <input type="text" id="pasta" name="pasta" inputmode="url" placeholder="drive.google.com/drive/folders/..." autocomplete="off">
@@ -151,10 +156,10 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
       <p class="hint" style="margin:0">Abaixo, um bloco por vídeo ou arte, com o link de cada um e a legenda.</p>
       <div id="criativos" style="display:grid;gap:12px"></div>
       <button type="button" class="btn ghost" id="addCriativo">+ Adicionar outro criativo</button>
-    </fieldset>
+    </section>
 
-    <fieldset>
-      <legend><span class="n">4.</span> Contato</legend>
+    <section class="card">
+      <h2 class="lg"><span class="n">4.</span> Contato</h2>
       <p class="hint">Preencha o que combina com o objetivo marcado no item 1.</p>
       <label class="f"><span>WhatsApp que vai atender os clientes do anúncio <em class="tag" id="tagWhats"></em></span>
         <small>Para o objetivo <b>Receber mensagens no WhatsApp</b>. É o número que vai receber e responder as conversas de quem clicar no anúncio. Coloque com DDD.</small>
@@ -164,17 +169,17 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
         <small>Para o objetivo <b>Vender no site</b>. Cole o link exato da página do produto ou da loja online para onde o anúncio vai levar. Ex.: sualoja.com.br/produto</small>
         <input type="text" id="site" name="site" inputmode="url" placeholder="sualoja.com.br/produto" autocomplete="off">
       </label>
-    </fieldset>
+    </section>
 
-    <fieldset>
-      <legend><span class="n">5.</span> Observações gerais</legend>
+    <section class="card">
+      <h2 class="lg"><span class="n">5.</span> Observações gerais</h2>
       <label class="f"><small>Público, região, promoção, o que não pode faltar, prazo…</small>
         <textarea id="obs" name="obs" rows="5"></textarea>
       </label>
       <label class="f">Quem preencheu
         <input type="text" id="autor" name="autor" autocomplete="name">
       </label>
-    </fieldset>
+    </section>
 
     <button type="button" class="btn link" id="limpar" style="justify-self:start">Apagar tudo e começar de novo</button>
   </form>
@@ -182,9 +187,12 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 
 <div class="bar">
   <div class="in">
-    <button type="button" class="btn primary" id="gerar">Gerar PDF e enviar</button>
+    <div class="btns">
+      <button type="button" class="btn primary" id="baixar">Baixar PDF</button>
+      <button type="button" class="btn ghost" id="gerar">Enviar</button>
+    </div>
     <div class="file" id="filePreview">Arquivo: Briefing.pdf</div>
-    <div class="file" id="versao">versão 6</div>
+    <div class="file" id="versao">versão 7</div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -300,7 +308,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     function mark(el, msg){
       el.classList.add('err');
       var m = document.createElement('div'); m.className = 'errmsg'; m.textContent = msg;
-      (el.closest('label.f') || el.closest('fieldset')).appendChild(m);
+      (el.closest('label.f') || el.closest('.card')).appendChild(m);
       problems.push(el);
     }
     if (!d.titulo) mark($('titulo'), 'Dê um título ao anúncio. Ele vira o nome do PDF.');
@@ -446,28 +454,38 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     openUrl = URL.createObjectURL(pdf.blob);
     $('btnOpen').href = openUrl;
     $('doneName').textContent = pdf.name;
+    $('doneTitle').textContent = 'PDF pronto';
     $('btnShare').hidden = !canShareFile(pdf);
     $('btnDownload').className = 'btn ' + ($('btnShare').hidden ? 'primary' : 'ghost');
     $('doneHelp').textContent = isIOS
-      ? 'No iPhone, "Baixar PDF" salva no app Arquivos, na pasta Downloads. "Abrir PDF" mostra o arquivo; dali dá para tocar em compartilhar e mandar.'
+      ? 'No iPhone o PDF fica no app Arquivos, na pasta Downloads. Se não baixou, toque em "Abrir PDF" e depois no botão de compartilhar para salvar ou mandar.'
       : '"Baixar PDF" salva na pasta Downloads do celular. "Abrir PDF" mostra o arquivo na tela.';
     $('done').hidden = false;
   }
   function makePdf(d){ return { blob: buildPdf(d), name: fileName(d.titulo), title: d.titulo }; }
 
-  $('gerar').addEventListener('click', function(){
-    toast('Gerando PDF…');
+  // Gera o PDF e, no mesmo toque, baixa ou abre o compartilhar (o celular só permite dentro do toque).
+  function run(action){
     var d = collect();
     if (!validate(d)) return;
     if (!window.jspdf){ toast('Sem internet para gerar o PDF. Conecte e tente de novo.'); return; }
     var pdf;
     try { pdf = makePdf(d); } catch(e){ toast('Não consegui gerar o PDF: ' + (e && e.message) + ' (mande um print disso)'); return; }
+    if (action === 'share' && canShareFile(pdf)){
+      navigator.share({files: [pdfFile(pdf)]}).catch(function(){});
+    } else {
+      download(pdf);
+    }
     // guarda o último envio (dá para pegar de novo) e deixa 1 em branco para o próximo
     try { localStorage.setItem(LAST, JSON.stringify(d)); } catch(e){}
-    clearDraft(); fill({autor: d.autor}); save(); $('toast').hidden = true;
+    clearDraft(); fill({autor: d.autor}); save();
     $('ultimo').hidden = false;
     showDone(pdf);
-  });
+    $('doneTitle').textContent = action === 'share' && canShareFile(pdf) ? 'PDF pronto para enviar' : 'PDF baixado';
+    toast((action === 'share' ? 'PDF gerado: ' : 'Baixando: ') + pdf.name);
+  }
+  $('baixar').addEventListener('click', function(){ run('download'); });
+  $('gerar').addEventListener('click', function(){ run('share'); });
   $('btnShare').addEventListener('click', function(){
     if (!lastPdf) return;
     navigator.share({files: [pdfFile(lastPdf)]}).then(function(){ toast('Enviado.'); }).catch(function(err){
