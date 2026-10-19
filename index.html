@@ -154,8 +154,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
         <input type="tel" id="whats" name="whats" inputmode="tel" placeholder="(81) 9 9999-9999" autocomplete="off">
       </label>
       <label class="f"><span>Link da página de venda <em class="tag" id="tagSite"></em></span>
-        <small>Para o objetivo <b>Vender no site</b>. Cole o link exato da página do produto ou da loja online para onde o anúncio vai levar, começando com https://</small>
-        <input type="url" id="site" name="site" inputmode="url" placeholder="https://sualoja.com.br/produto" autocomplete="off">
+        <small>Para o objetivo <b>Vender no site</b>. Cole o link exato da página do produto ou da loja online para onde o anúncio vai levar. Ex.: sualoja.com.br/produto</small>
+        <input type="text" id="site" name="site" inputmode="url" placeholder="sualoja.com.br/produto" autocomplete="off">
       </label>
     </fieldset>
 
@@ -287,7 +287,6 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     });
     if (d.objetivo === 'Receber mensagens no WhatsApp' && !d.whats) mark($('whats'), 'Para anúncio de WhatsApp, informe o número.');
     if (d.objetivo === 'Vender no site' && !d.site) mark($('site'), 'Para vender no site, cole o link da página de venda.');
-    if (d.site && !/^https?:\/\//i.test(d.site)) mark($('site'), 'O link precisa começar com https://');
     if (problems.length){
       problems[0].scrollIntoView({behavior:'smooth', block:'center'});
       if (problems[0].focus) problems[0].focus({preventScroll:true});
@@ -340,7 +339,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
       doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
       if (opts.link && value){
         doc.setTextColor(26, 82, 160);
-        lines.forEach(function(l, i){ doc.textWithLink(l, M + 150, y + i * 14, {url: value}); });
+        lines.forEach(function(l, i){ doc.textWithLink(l, M + 150, y + i * 14, {url: typeof opts.link === 'string' ? opts.link : value}); });
       } else {
         doc.setTextColor.apply(doc, ink);
         doc.text(lines, M + 150, y, {lineHeightFactor: 1.33});
@@ -381,7 +380,8 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 
     section('4. Contato');
     field('WhatsApp que vai atender os clientes', d.whats);
-    field('Link da página de venda', d.site, {link: /^https?:\/\//i.test(d.site)});
+    var siteUrl = !d.site ? '' : (/^https?:\/\//i.test(d.site) ? d.site : 'https://' + d.site);
+    field('Link da página de venda', d.site, {link: siteUrl});
 
     section('5. Observações gerais');
     doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor.apply(doc, ink);
