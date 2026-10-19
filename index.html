@@ -179,29 +179,6 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     <div class="top"><strong>Criativo <span class="idx"></span></strong><button type="button" class="btn link rm">Remover</button></div>
     <label class="f">Link do Drive (vídeo ou arte)<input type="url" data-k="link" inputmode="url" placeholder="https://drive.google.com/..." autocomplete="off"></label>
     <label class="f">Legenda completa<textarea data-k="legenda" rows="4"></textarea></label>
-    <label class="f">Texto do botão
-      <select data-k="botao">
-        <option value="">Escolha…</option>
-        <option>Enviar mensagem</option>
-        <option>Saiba mais</option>
-        <option>Comprar agora</option>
-        <option>Cadastre-se</option>
-        <option>Fale conosco</option>
-        <option>Ver mais no Instagram</option>
-        <option>Como chegar</option>
-        <option>Ligar agora</option>
-      </select>
-    </label>
-    <label class="f">Pra onde o botão leva?
-      <select data-k="destino">
-        <option value="">Escolha…</option>
-        <option>WhatsApp</option>
-        <option>Site</option>
-        <option>Instagram</option>
-        <option>Formulário de cadastro</option>
-        <option>Endereço da loja (mapa)</option>
-      </select>
-    </label>
   </div>
 </template>
 
@@ -382,8 +359,6 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
       doc.text('CRIATIVO ' + (i + 1), M, y); y += 14;
       field('Link do Drive', c.link, {link: true});
       field('Legenda completa', c.legenda);
-      field('Texto do botão', c.botao);
-      field('Pra onde o botão leva?', c.destino);
       y += 4;
     });
 
