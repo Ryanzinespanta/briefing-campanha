@@ -105,14 +105,14 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   <header>
     <div class="eyebrow">Entrega para o gestor de tráfego</div>
     <h1>Briefing de Campanha</h1>
-    <p>Preencha um briefing por anúncio. No fim, toque em <b>Baixar PDF</b>: o arquivo sai com o título do anúncio e o formulário volta em branco para o próximo.</p>
+    <p>Preencha um briefing por anúncio. No fim, toque em <b>Enviar pelo WhatsApp</b>: o WhatsApp abre com tudo já escrito, é só tocar em enviar. O formulário volta em branco para o próximo.</p>
   </header>
 
   <div class="inapp" id="inapp" hidden>
     <b>Abra no navegador para baixar o PDF.</b>
     Você abriu este link dentro de um aplicativo, que pode bloquear o download. Toque nos três pontinhos (⋯ ou ⋮) no canto da tela e escolha <b>Abrir no navegador</b>, no Safari ou no Chrome.
   </div>
-  <button type="button" class="btn ghost" id="ultimo" hidden style="width:100%;margin-bottom:14px">Pegar de novo o último PDF gerado</button>
+  <button type="button" class="btn ghost" id="ultimo" hidden style="width:100%;margin-bottom:14px">Reenviar o último briefing pelo WhatsApp</button>
 
   <form id="f" novalidate>
     <section class="card">
@@ -188,11 +188,11 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 <div class="bar">
   <div class="in">
     <div class="btns">
-      <button type="button" class="btn primary" id="baixar">Baixar PDF</button>
-      <button type="button" class="btn ghost" id="gerar">Enviar</button>
+      <button type="button" class="btn primary" id="whatsapp">Enviar pelo WhatsApp</button>
+      <button type="button" class="btn ghost" id="baixar">Baixar PDF</button>
     </div>
     <div class="file" id="filePreview">Arquivo: Briefing.pdf</div>
-    <div class="file" id="versao">versão 7</div>
+    <div class="file" id="versao">versão 8</div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -230,6 +230,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
 <script>
 (function(){
   var KEY = 'briefing-rascunho-v1';
+  var WHATS_NUM = '5511939057483', WHATS_LABEL = '(11) 93905-7483';
   var $ = function(id){ return document.getElementById(id); };
   var form = $('f'), list = $('criativos'), tpl = $('tplCriativo');
   var lastPdf = null;
@@ -298,7 +299,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     var clean = (t || '').replace(/[\\\/:*?"<>|#%{}~&]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80);
     return (clean || 'Briefing') + '.pdf';
   }
-  function updateFileName(){ $('filePreview').textContent = 'Arquivo: ' + fileName($('titulo').value); }
+  function updateFileName(){ $('filePreview').textContent = 'Vai para o WhatsApp ' + WHATS_LABEL; }
 
   // ---------- validação ----------
   function validate(d){
@@ -485,7 +486,53 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
     toast((action === 'share' ? 'PDF gerado: ' : 'Baixando: ') + pdf.name);
   }
   $('baixar').addEventListener('click', function(){ run('download'); });
-  $('gerar').addEventListener('click', function(){ run('share'); });
+
+  // ---------- WhatsApp ----------
+  function withHttp(u){ return !u ? '' : (/^https?:\/\//i.test(u) ? u : 'https://' + u); }
+  function buildMsg(d){
+    var L = [];
+    L.push('*BRIEFING DE CAMPANHA*');
+    L.push('*Título do anúncio:* ' + d.titulo);
+    L.push('');
+    L.push('*1. Objetivo*');
+    L.push(d.objetivo);
+    L.push('');
+    L.push('*2. Verba e datas*');
+    L.push('Por dia: R$ ' + d.verba.replace(/^R\$\s*/i, ''));
+    L.push('Começa: ' + br(d.inicio));
+    L.push('Termina: ' + (d.semfim ? 'sem data pra acabar' : br(d.fim)));
+    L.push('');
+    L.push('*3. Criativos*');
+    if (d.pasta) L.push('Pasta com todos: ' + withHttp(d.pasta));
+    d.criativos.forEach(function(c, i){
+      if (!c.link && !c.legenda) return;
+      L.push('');
+      L.push('_Criativo ' + (i + 1) + '_');
+      if (c.link) L.push('Link: ' + withHttp(c.link));
+      if (c.legenda) L.push('Legenda: ' + c.legenda);
+    });
+    L.push('');
+    L.push('*4. Contato*');
+    L.push('WhatsApp que atende: ' + (d.whats || '-'));
+    L.push('Página de venda: ' + (d.site ? withHttp(d.site) : '-'));
+    L.push('');
+    L.push('*5. Observações*');
+    L.push(d.obs || '-');
+    if (d.autor){ L.push(''); L.push('Preenchido por: ' + d.autor); }
+    return L.join('\n');
+  }
+  function sendWhats(d){
+    window.location.href = 'https://wa.me/' + WHATS_NUM + '?text=' + encodeURIComponent(buildMsg(d));
+  }
+  $('whatsapp').addEventListener('click', function(){
+    var d = collect();
+    if (!validate(d)) return;
+    try { localStorage.setItem(LAST, JSON.stringify(d)); } catch(e){}
+    clearDraft(); fill({autor: d.autor}); save();
+    $('ultimo').hidden = false;
+    toast('Abrindo o WhatsApp…');
+    sendWhats(d);
+  });
   $('btnShare').addEventListener('click', function(){
     if (!lastPdf) return;
     navigator.share({files: [pdfFile(lastPdf)]}).then(function(){ toast('Enviado.'); }).catch(function(err){
@@ -497,8 +544,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   $('btnClose').addEventListener('click', function(){ $('done').hidden = true; window.scrollTo({top: 0}); });
   $('ultimo').addEventListener('click', function(){
     var d; try { d = JSON.parse(localStorage.getItem(LAST) || 'null'); } catch(e){ d = null; }
-    if (!d || !window.jspdf) return;
-    showDone(makePdf(d));
+    if (d) sendWhats(d);
   });
   try { if (localStorage.getItem(LAST)) $('ultimo').hidden = false; } catch(e){}
 
