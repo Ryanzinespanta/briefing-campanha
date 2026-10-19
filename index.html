@@ -184,6 +184,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   <div class="in">
     <button type="button" class="btn primary" id="gerar">Gerar PDF e enviar</button>
     <div class="file" id="filePreview">Arquivo: Briefing.pdf</div>
+    <div class="file" id="versao">versão 6</div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -210,6 +211,13 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   </div>
 </template>
 
+<script>
+  // mostra qualquer erro na tela, para a pessoa conseguir avisar o que aconteceu
+  window.addEventListener('error', function(e){
+    var t = document.getElementById('toast'); if (!t) return;
+    t.textContent = 'Erro: ' + (e.message || 'desconhecido') + ' (mande um print disso)'; t.hidden = false;
+  });
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function(){
@@ -448,11 +456,12 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-
   function makePdf(d){ return { blob: buildPdf(d), name: fileName(d.titulo), title: d.titulo }; }
 
   $('gerar').addEventListener('click', function(){
+    toast('Gerando PDF…');
     var d = collect();
     if (!validate(d)) return;
     if (!window.jspdf){ toast('Sem internet para gerar o PDF. Conecte e tente de novo.'); return; }
     var pdf;
-    try { pdf = makePdf(d); } catch(e){ toast('Não consegui gerar o PDF. Tente de novo.'); return; }
+    try { pdf = makePdf(d); } catch(e){ toast('Não consegui gerar o PDF: ' + (e && e.message) + ' (mande um print disso)'); return; }
     // guarda o último envio (dá para pegar de novo) e deixa 1 em branco para o próximo
     try { localStorage.setItem(LAST, JSON.stringify(d)); } catch(e){}
     clearDraft(); fill({autor: d.autor}); save(); $('toast').hidden = true;
